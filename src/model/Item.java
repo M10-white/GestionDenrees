@@ -15,23 +15,21 @@ public abstract class Item implements Dessinable {
     private Date dateAjout;
     private double prix;
     
-    // Attributs supplémentaires
-    private String dlc; // DLC ou DLUO
+    // Nouveaux attributs
+    private String dlc;
+    private String image; // Permet de stocker un chemin d'image personnalisé
     private String position; // Position dans le contenant
     private String phaseVieillissement;
-    private String annotations;
-    private double note;
-    private String caracteristiquesGustatives;
-    private String drinkingWindow; // Période conseillée pour consommer l'item
-    
+    private double note; // Note/score
+
     /**
      * Constructeur de base pour un item.
      *
      * @param denomination nom de l'item
-     * @param description description (ex : rouge, blanc, champagne, etc.)
+     * @param description description de l'item
      * @param quantite quantité disponible
      * @param anneeProduction année de production
-     * @param dateAjout date d'ajout dans le système
+     * @param dateAjout date d'ajout
      * @param prix prix de l'item
      */
     public Item(String denomination, String description, int quantite, int anneeProduction, Date dateAjout, double prix) {
@@ -62,9 +60,20 @@ public abstract class Item implements Dessinable {
     public double getPrix() { return prix; }
     public void setPrix(double prix) { this.prix = prix; }
     
-    // Getters et setters pour les attributs supplémentaires
+    // Getters et setters pour les nouveaux attributs
     public String getDlc() { return dlc; }
     public void setDlc(String dlc) { this.dlc = dlc; }
+    
+    /**
+     * Si un chemin d'image personnalisé a été défini, il sera utilisé ; sinon, on génère un chemin par défaut.
+     */
+    @Override
+    public String getImage() {
+        if (image != null && !image.isEmpty())
+            return image;
+        return "images" + File.separator + getClass().getSimpleName() + ".png";
+    }
+    public void setImage(String image) { this.image = image; }
     
     public String getPosition() { return position; }
     public void setPosition(String position) { this.position = position; }
@@ -72,27 +81,8 @@ public abstract class Item implements Dessinable {
     public String getPhaseVieillissement() { return phaseVieillissement; }
     public void setPhaseVieillissement(String phaseVieillissement) { this.phaseVieillissement = phaseVieillissement; }
     
-    public String getAnnotations() { return annotations; }
-    public void setAnnotations(String annotations) { this.annotations = annotations; }
-    
     public double getNote() { return note; }
     public void setNote(double note) { this.note = note; }
-    
-    public String getCaracteristiquesGustatives() { return caracteristiquesGustatives; }
-    public void setCaracteristiquesGustatives(String caracteristiquesGustatives) { this.caracteristiquesGustatives = caracteristiquesGustatives; }
-    
-    public String getDrinkingWindow() { return drinkingWindow; }
-    public void setDrinkingWindow(String drinkingWindow) { this.drinkingWindow = drinkingWindow; }
-    
-    /**
-     * Retourne le chemin de l'image associée à cet item.
-     *
-     * @return chemin de l'image basé sur le nom de la classe
-     */
-    @Override
-    public String getImage() {
-        return "images" + File.separator + getClass().getSimpleName() + ".png";
-    }
     
     /**
      * Affiche les informations de l'item dans la console.
@@ -104,12 +94,9 @@ public abstract class Item implements Dessinable {
         System.out.println("Année de production : " + anneeProduction);
         System.out.println("Date d'ajout : " + dateAjout);
         System.out.println("Prix : " + prix);
-        if(dlc != null) System.out.println("DLC/DLUO : " + dlc);
-        if(position != null) System.out.println("Position : " + position);
-        if(phaseVieillissement != null) System.out.println("Phase de vieillissement : " + phaseVieillissement);
-        if(annotations != null) System.out.println("Annotations : " + annotations);
-        if(note != 0) System.out.println("Note/Score : " + note);
-        if(caracteristiquesGustatives != null) System.out.println("Caractéristiques gustatives : " + caracteristiquesGustatives);
-        if(drinkingWindow != null) System.out.println("Drinking Window : " + drinkingWindow);
+        if (dlc != null && !dlc.isEmpty()) System.out.println("DLC : " + dlc);
+        if (position != null && !position.isEmpty()) System.out.println("Position : " + position);
+        if (phaseVieillissement != null && !phaseVieillissement.isEmpty()) System.out.println("Phase de vieillissement : " + phaseVieillissement);
+        if (note != 0) System.out.println("Note/Score : " + note);
     }
 }
