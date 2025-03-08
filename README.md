@@ -14,7 +14,6 @@ Ce projet Java est une application de gestion de denrées, axée ici sur la gest
 - [Installation et Configuration](#installation-et-configuration)
 - [Compilation et Exécution](#compilation-et-exécution)
 - [Utilisation](#utilisation)
-- [Extensions et Améliorations](#extensions-et-améliorations)
 - [Crédits](#crédits)
 
 ## Aperçu
