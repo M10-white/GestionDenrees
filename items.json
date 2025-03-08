@@ -1,0 +1,62 @@
+[
+  {
+    "denomination": "Château Margaux",
+    "description": "Vin rouge élégant de Bordeaux, complexe avec des notes de fruits noirs, de cèdre et de tabac.",
+    "quantite": 5,
+    "anneeProduction": 2015,
+    "dateAjout": "2025-03-08",
+    "prix": 150.0,
+    "dlc": "À consommer entre 2025 et 2040",
+    "image": "images/chateau-margaux-2018-1er-cru-classe.png",
+    "position": "Cellier A1",
+    "phaseVieillissement": "En cours de maturation",
+    "note": 4.5,
+    "cepage": "Cabernet Sauvignon, Merlot",
+    "region": "Bordeaux, France"
+  },
+  {
+    "denomination": "Château Lafite Rothschild",
+    "description": "Vin rouge prestigieux et raffiné avec des arômes de cassis et de violette.",
+    "quantite": 3,
+    "anneeProduction": 2014,
+    "dateAjout": "2025-03-08",
+    "prix": 250.0,
+    "dlc": "À consommer entre 2024 et 2038",
+    "image": "images/chateau-lafite-rothschild-2023.png",
+    "position": "Cellier B2",
+    "phaseVieillissement": "Prêt à être dégusté",
+    "note": 4.8,
+    "cepage": "Cabernet Sauvignon, Petit Verdot",
+    "region": "Bordeaux, France"
+  },
+  {
+    "denomination": "Château d'Yquem",
+    "description": "Vin blanc liquoreux de Sauternes, réputé pour sa richesse, sa complexité aromatique et son équilibre entre acidité et douceur.",
+    "quantite": 3,
+    "anneeProduction": 2016,
+    "dateAjout": "2025-03-08",
+    "prix": 350.0,
+    "dlc": "À consommer entre 2026 et 2040",
+    "image": "images/363592-mainProductPicture-ProductDetailsPage-ConversionMediaFormat.png",
+    "position": "Cellier E1",
+    "phaseVieillissement": "Mûrissement optimal",
+    "note": 4.9,
+    "cepage": "Sémillon, Sauvignon Blanc",
+    "region": "Sauternes, France"
+  },
+  {
+    "denomination": "Domaine Huet Vouvray Demi-Sec",
+    "description": "Vin blanc de Loire, équilibré et fruité, avec des notes florales et une belle acidité.",
+    "quantite": 6,
+    "anneeProduction": 2018,
+    "dateAjout": "2025-03-08",
+    "prix": 45.0,
+    "dlc": "À consommer entre 2023 et 2030",
+    "image": "images/le-haut-lieu-demi-sec-2021-domaine-huet.png",
+    "position": "Cellier F1",
+    "phaseVieillissement": "À consommer jeune",
+    "note": 4.3,
+    "cepage": "Chenin Blanc",
+    "region": "Vouvray, France"
+  }
+]

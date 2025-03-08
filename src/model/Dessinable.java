@@ -1,7 +1,5 @@
 package model;
 
-import java.io.File;
-
 /**
  * Interface pour les objets qui possèdent une représentation graphique.
  */
