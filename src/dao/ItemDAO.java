@@ -2,22 +2,24 @@ package dao;
 
 import model.Item;
 import model.Vin;
-
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
  * Classe DAO pour la persistance des items via un fichier JSON.
+ *
+ * <p>Cette implémentation gère la sérialisation et la désérialisation
+ * des items dans un fichier JSON sans utiliser de bibliothèque externe.</p>
  */
 public class ItemDAO {
+    /** Chemin du fichier JSON de persistance. */
     private static final String FILE_PATH = "items.json";
 
     /**
-     * Lit et retourne la liste des items depuis le fichier JSON.
-     * Si le fichier n'existe pas, retourne une liste vide.
+     * Récupère la liste des items depuis le fichier JSON.
      *
-     * @return la liste des items.
+     * @return une liste d'items
      */
     public List<Item> getAllItems() {
         List<Item> items = new ArrayList<>();
@@ -32,13 +34,12 @@ public class ItemDAO {
                 sb.append(line);
             }
             String json = sb.toString().trim();
-            // On s'attend à un tableau JSON : [ {...}, {...} ]
+            // Traitement simplifié pour un tableau JSON
             if (json.startsWith("[") && json.endsWith("]")) {
                 json = json.substring(1, json.length() - 1).trim();
                 if (json.isEmpty()) {
                     return items;
                 }
-                // Séparation naïve des objets par "},{"
                 String[] objectStrings = json.split("\\},\\s*\\{");
                 for (int i = 0; i < objectStrings.length; i++) {
                     String objStr = objectStrings[i];
@@ -63,8 +64,8 @@ public class ItemDAO {
     /**
      * Sérialise la liste des items en chaîne JSON.
      *
-     * @param items liste des items.
-     * @return chaîne JSON.
+     * @param items la liste des items à sérialiser
+     * @return la chaîne JSON représentant les items
      */
     private String serializeItems(List<Item> items) {
         StringBuilder sb = new StringBuilder();
@@ -80,10 +81,11 @@ public class ItemDAO {
     }
 
     /**
-     * Sérialise un item (ici supposé être de type Vin) en JSON.
+     * Sérialise un item en une chaîne JSON.
+     * Pour cet exemple, on suppose que l'item est un Vin.
      *
-     * @param item l'item à sérialiser.
-     * @return chaîne JSON représentant l'item.
+     * @param item l'item à sérialiser
+     * @return la chaîne JSON représentant l'item
      */
     private String serializeItem(Item item) {
         StringBuilder sb = new StringBuilder();
@@ -100,7 +102,6 @@ public class ItemDAO {
         sb.append("\"position\":\"").append(item.getPosition() != null ? item.getPosition() : "").append("\",");
         sb.append("\"phaseVieillissement\":\"").append(item.getPhaseVieillissement() != null ? item.getPhaseVieillissement() : "").append("\",");
         sb.append("\"note\":").append(item.getNote()).append(",");
-        // Pour Vin
         if (item instanceof Vin) {
             Vin vin = (Vin) item;
             sb.append("\"cepage\":\"").append(vin.getCepage() != null ? vin.getCepage() : "").append("\",");
@@ -116,7 +117,7 @@ public class ItemDAO {
     /**
      * Sauvegarde la liste complète des items dans le fichier JSON.
      *
-     * @param items liste des items.
+     * @param items la liste des items à sauvegarder
      */
     private void saveAllItems(List<Item> items) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH))) {
@@ -127,17 +128,16 @@ public class ItemDAO {
     }
 
     /**
-     * Parse une chaîne JSON représentant un objet item.
+     * Parse une chaîne JSON représentant un item.
      *
-     * @param jsonObject chaîne JSON.
-     * @return l'item (Vin) ou null en cas d'erreur.
+     * @param jsonObject la chaîne JSON de l'item
+     * @return l'item parsé, ou null en cas d'erreur
      */
     private Item parseItem(String jsonObject) {
         jsonObject = jsonObject.trim();
         if (jsonObject.startsWith("{") && jsonObject.endsWith("}")) {
             jsonObject = jsonObject.substring(1, jsonObject.length()-1);
         }
-        // Découpage naïf par virgule en tenant compte des guillemets
         String[] fields = jsonObject.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
         Map<String, String> map = new HashMap<>();
         for (String field : fields) {
@@ -183,9 +183,9 @@ public class ItemDAO {
     }
 
     /**
-     * Insère un nouvel item dans le stockage JSON.
+     * Insère un nouvel item dans le fichier JSON.
      *
-     * @param item l'item à insérer.
+     * @param item l'item à insérer
      */
     public void insertItem(Item item) {
         List<Item> items = getAllItems();
@@ -194,10 +194,10 @@ public class ItemDAO {
     }
 
     /**
-     * Met à jour un item existant dans le stockage JSON.
-     * On utilise la dénomination comme identifiant unique.
+     * Met à jour un item existant dans le fichier JSON.
+     * L'item est identifié par sa dénomination.
      *
-     * @param item l'item à mettre à jour.
+     * @param item l'item à mettre à jour
      */
     public void updateItem(Item item) {
         List<Item> items = getAllItems();
@@ -211,10 +211,10 @@ public class ItemDAO {
     }
 
     /**
-     * Supprime un item du stockage JSON.
-     * On identifie l'item par sa dénomination.
+     * Supprime un item du fichier JSON.
+     * L'item est identifié par sa dénomination.
      *
-     * @param item l'item à supprimer.
+     * @param item l'item à supprimer
      */
     public void deleteItem(Item item) {
         List<Item> items = getAllItems();

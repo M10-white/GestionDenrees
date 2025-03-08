@@ -4,23 +4,27 @@ import java.util.Date;
 
 /**
  * Classe représentant un vin dans la cave.
+ * Elle hérite de la classe abstraite Item et ajoute des attributs spécifiques aux vins.
+ *
+ * <p>Les attributs spécifiques incluent le cépage et la région de production.</p>
  */
 public class Vin extends Item {
-    // Attributs spécifiques au vin
+    /** Le cépage utilisé dans le vin. */
     private String cepage;
+    /** La région d'origine du vin. */
     private String region;
     
     /**
-     * Constructeur pour un vin.
+     * Constructeur pour créer un objet Vin.
      *
-     * @param denomination nom du vin
-     * @param description description (ex : rouge, blanc, etc.)
-     * @param quantite quantité disponible
-     * @param anneeProduction année de production
-     * @param dateAjout date d'ajout dans la cave
-     * @param prix prix du vin
-     * @param cepage cépage du vin
-     * @param region région d'origine
+     * @param denomination le nom du vin
+     * @param description la description du vin (ex : rouge, blanc)
+     * @param quantite la quantité disponible
+     * @param anneeProduction l'année de production
+     * @param dateAjout la date d'ajout du vin
+     * @param prix le prix du vin
+     * @param cepage le cépage du vin
+     * @param region la région d'origine du vin
      */
     public Vin(String denomination, String description, int quantite, int anneeProduction, Date dateAjout, double prix, String cepage, String region) {
         super(denomination, description, quantite, anneeProduction, dateAjout, prix);
@@ -28,14 +32,22 @@ public class Vin extends Item {
         this.region = region;
     }
     
+    /**
+     * Retourne le cépage du vin.
+     * @return le cépage
+     */
     public String getCepage() { return cepage; }
     public void setCepage(String cepage) { this.cepage = cepage; }
     
+    /**
+     * Retourne la région d'origine du vin.
+     * @return la région
+     */
     public String getRegion() { return region; }
     public void setRegion(String region) { this.region = region; }
     
     /**
-     * Affiche les informations complètes du vin.
+     * Affiche les informations complètes du vin, incluant les attributs spécifiques.
      */
     @Override
     public void afficher() {

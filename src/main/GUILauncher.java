@@ -9,8 +9,10 @@ import javax.swing.UIManager;
 import java.util.List;
 
 /**
- * Lanceur de l'interface graphique avec Look and Feel amélioré.
- * Charge également les items depuis le fichier JSON afin de conserver les données entre les sessions.
+ * Lanceur de l'interface graphique.
+ *
+ * <p>Cette classe configure le Look and Feel Nimbus, charge les données persistantes depuis le fichier JSON
+ * et lance l'interface graphique principale.</p>
  */
 public class GUILauncher {
     public static void main(String[] args) {
@@ -41,12 +43,9 @@ public class GUILauncher {
         }
         
         // Lancement de l'interface graphique dans le thread Swing
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                MainFrame frame = new MainFrame(contenant);
-                frame.setVisible(true);
-            }
+        SwingUtilities.invokeLater(() -> {
+            MainFrame frame = new MainFrame(contenant);
+            frame.setVisible(true);
         });
     }
 }

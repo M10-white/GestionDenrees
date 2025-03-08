@@ -15,7 +15,11 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Fenêtre principale de l'interface graphique pour la gestion des denrées.
+ * Classe principale de l'interface graphique pour la gestion des denrées.
+ * Implémente ContenantObserver pour être notifiée des changements dans le Contenant.
+ *
+ * <p>Cette classe permet d'afficher les items dans un tableau, de les ajouter, modifier, supprimer,
+ * et d'afficher leurs détails (y compris l'image) via un double-clic sur une ligne.</p>
  */
 public class MainFrame extends JFrame implements ContenantObserver {
     private Contenant contenant;
@@ -26,15 +30,15 @@ public class MainFrame extends JFrame implements ContenantObserver {
     private JTextArea txtPairings;
 
     /**
-     * Constructeur qui initialise l'interface et enregistre l'observateur.
+     * Constructeur de MainFrame.
      *
-     * @param contenant le contenant à gérer.
+     * @param contenant le contenant à gérer
      */
     public MainFrame(Contenant contenant) {
         this.contenant = contenant;
         this.contenant.addObserver(this);
         initUI();
-        update(); // Mise à jour initiale
+        update(); // Mise à jour initiale de l'affichage
     }
 
     /**
@@ -42,12 +46,12 @@ public class MainFrame extends JFrame implements ContenantObserver {
      */
     private void initUI() {
         setTitle("Gestion de Denrées");
-        setSize(1366, 768);
+        setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         // Titre stylisé
-        JLabel lblTitle = new JLabel("<html><center><h1>Cave à vin</h1><h3>Double clic sur un vin pour en savoir +</h3></center></html>");
+        JLabel lblTitle = new JLabel("<html><center><h1>Cave à vin</h1></center></html>");
         lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
         lblTitle.setForeground(new Color(50, 50, 150));
         lblTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
@@ -142,7 +146,7 @@ public class MainFrame extends JFrame implements ContenantObserver {
     }
 
     /**
-     * Affiche une boîte de dialogue pour ajouter un nouvel item (ici, un Vin).
+     * Affiche une boîte de dialogue pour ajouter un nouveau vin.
      */
     private void addItemDialog() {
         // Champs de base
@@ -229,7 +233,7 @@ public class MainFrame extends JFrame implements ContenantObserver {
     }
 
     /**
-     * Permet de modifier l'item sélectionné dans le tableau.
+     * Permet de modifier le vin sélectionné dans le tableau.
      */
     private void modifySelectedItem() {
         int selectedRow = table.getSelectedRow();
@@ -305,7 +309,7 @@ public class MainFrame extends JFrame implements ContenantObserver {
                     vin.setPhaseVieillissement(txtPhase.getText());
                     vin.setNote(Double.parseDouble(txtNote.getText()));
                     
-                    // Sauvegarder la modification dans le fichier JSON via le DAO
+                    // Mise à jour dans le fichier JSON via le DAO
                     try {
                         dao.ItemDAO jsonDao = new dao.ItemDAO();
                         jsonDao.updateItem(vin);
@@ -314,7 +318,6 @@ public class MainFrame extends JFrame implements ContenantObserver {
                     }
                     
                     update();
-                    
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(this, "Erreur de format dans les champs numériques.", "Erreur", JOptionPane.ERROR_MESSAGE);
                 }
@@ -325,7 +328,7 @@ public class MainFrame extends JFrame implements ContenantObserver {
     }
 
     /**
-     * Supprime l'item sélectionné dans le tableau.
+     * Supprime le vin sélectionné dans le tableau.
      */
     private void removeSelectedItem() {
         int selectedRow = table.getSelectedRow();
@@ -339,7 +342,15 @@ public class MainFrame extends JFrame implements ContenantObserver {
                 }
             }
             if (toRemove != null) {
+                // Supprime l'item de la mémoire
                 contenant.supprimerItem(toRemove);
+                // Supprime l'item du fichier JSON via le DAO
+                try {
+                    dao.ItemDAO jsonDao = new dao.ItemDAO();
+                    jsonDao.deleteItem(toRemove);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         } else {
             JOptionPane.showMessageDialog(this, "Veuillez sélectionner un vin à supprimer.", "Avertissement", JOptionPane.WARNING_MESSAGE);
@@ -347,9 +358,9 @@ public class MainFrame extends JFrame implements ContenantObserver {
     }
 
     /**
-     * Affiche toutes les informations de l'item dans un dialogue, incluant l'image.
+     * Affiche les détails de l'item dans un dialogue, incluant une image agrandie.
      *
-     * @param item l'item dont on souhaite afficher les détails.
+     * @param item l'item dont les détails doivent être affichés
      */
     private void showItemDetails(Item item) {
         // Panneau regroupant texte et image
@@ -388,7 +399,7 @@ public class MainFrame extends JFrame implements ContenantObserver {
     }
 
     /**
-     * Met à jour le tableau et les statistiques en affichant les items du contenant.
+     * Met à jour le tableau et les statistiques à partir du contenu du contenant.
      */
     @Override
     public void update() {
@@ -417,7 +428,7 @@ public class MainFrame extends JFrame implements ContenantObserver {
     }
 
     /**
-     * Renderer personnalisé pour afficher une image dans une cellule de tableau.
+     * Renderer personnalisé pour afficher une image dans une cellule du tableau.
      */
     class ImageRenderer extends DefaultTableCellRenderer {
         @Override

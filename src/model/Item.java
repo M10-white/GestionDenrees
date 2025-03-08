@@ -5,32 +5,48 @@ import java.util.Date;
 
 /**
  * Classe abstraite représentant un item dans le système de gestion des denrées.
+ * Cette classe regroupe les attributs communs à tous les items et implémente l'interface Dessinable.
+ *
+ * <p>Les attributs incluent : la dénomination, la description, la quantité, l'année de production,
+ * la date d'ajout, le prix, ainsi que des attributs supplémentaires (DLC, image, position, phase de vieillissement, note).</p>
+ *
+ * @author 
  */
 public abstract class Item implements Dessinable {
-    // Attributs de base
+    /** Le nom de l'item. */
     private String denomination;
+    /** La description de l'item. */
     private String description;
+    /** La quantité disponible. */
     private int quantite;
+    /** L'année de production de l'item. */
     private int anneeProduction;
+    /** La date d'ajout de l'item. */
     private Date dateAjout;
+    /** Le prix de l'item. */
     private double prix;
     
-    // Nouveaux attributs
+    // Attributs supplémentaires
+    /** La date limite de consommation (DLC ou DLUO). */
     private String dlc;
-    private String image; // Permet de stocker un chemin d'image personnalisé
-    private String position; // Position dans le contenant
+    /** Le chemin de l'image associée à l'item. */
+    private String image;
+    /** La position de l'item dans le contenant. */
+    private String position;
+    /** La phase de vieillissement de l'item. */
     private String phaseVieillissement;
-    private double note; // Note/score
+    /** La note ou le score de l'item. */
+    private double note;
 
     /**
-     * Constructeur de base pour un item.
+     * Constructeur de base pour créer un item.
      *
-     * @param denomination nom de l'item
-     * @param description description de l'item
-     * @param quantite quantité disponible
-     * @param anneeProduction année de production
-     * @param dateAjout date d'ajout
-     * @param prix prix de l'item
+     * @param denomination le nom de l'item
+     * @param description la description de l'item
+     * @param quantite la quantité disponible
+     * @param anneeProduction l'année de production
+     * @param dateAjout la date d'ajout
+     * @param prix le prix de l'item
      */
     public Item(String denomination, String description, int quantite, int anneeProduction, Date dateAjout, double prix) {
         this.denomination = denomination;
@@ -40,23 +56,47 @@ public abstract class Item implements Dessinable {
         this.dateAjout = dateAjout;
         this.prix = prix;
     }
-    
-    // Getters et setters pour les attributs de base
+
+    // Getters et setters avec leur Javadoc
+    /**
+     * Retourne la dénomination de l'item.
+     * @return la dénomination
+     */
     public String getDenomination() { return denomination; }
     public void setDenomination(String denomination) { this.denomination = denomination; }
     
+    /**
+     * Retourne la description de l'item.
+     * @return la description
+     */
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     
+    /**
+     * Retourne la quantité disponible.
+     * @return la quantité
+     */
     public int getQuantite() { return quantite; }
     public void setQuantite(int quantite) { this.quantite = quantite; }
     
+    /**
+     * Retourne l'année de production.
+     * @return l'année de production
+     */
     public int getAnneeProduction() { return anneeProduction; }
     public void setAnneeProduction(int anneeProduction) { this.anneeProduction = anneeProduction; }
     
+    /**
+     * Retourne la date d'ajout de l'item.
+     * @return la date d'ajout
+     */
     public Date getDateAjout() { return dateAjout; }
     public void setDateAjout(Date dateAjout) { this.dateAjout = dateAjout; }
     
+    /**
+     * Retourne le prix de l'item.
+     * @return le prix
+     */
     public double getPrix() { return prix; }
     public void setPrix(double prix) { this.prix = prix; }
     
@@ -65,7 +105,10 @@ public abstract class Item implements Dessinable {
     public void setDlc(String dlc) { this.dlc = dlc; }
     
     /**
-     * Si un chemin d'image personnalisé a été défini, il sera utilisé ; sinon, on génère un chemin par défaut.
+     * Retourne le chemin de l'image associé à cet item.
+     * Si aucun chemin personnalisé n'est défini, renvoie le chemin par défaut.
+     *
+     * @return le chemin de l'image
      */
     @Override
     public String getImage() {
@@ -85,7 +128,7 @@ public abstract class Item implements Dessinable {
     public void setNote(double note) { this.note = note; }
     
     /**
-     * Affiche les informations de l'item dans la console.
+     * Affiche les informations de base de l'item dans la console.
      */
     public void afficher() {
         System.out.println("Dénomination : " + denomination);
