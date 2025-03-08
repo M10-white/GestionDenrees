@@ -42,12 +42,12 @@ public class MainFrame extends JFrame implements ContenantObserver {
      */
     private void initUI() {
         setTitle("Gestion de Denrées");
-        setSize(800, 600);
+        setSize(1366, 768);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         // Titre stylisé
-        JLabel lblTitle = new JLabel("<html><center><h1>Cave à vin</h1></center></html>");
+        JLabel lblTitle = new JLabel("<html><center><h1>Cave à vin</h1><h3>Double clic sur un vin pour en savoir +</h3></center></html>");
         lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
         lblTitle.setForeground(new Color(50, 50, 150));
         lblTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
@@ -214,6 +214,14 @@ public class MainFrame extends JFrame implements ContenantObserver {
                 // Ajout dans le Contenant (gestion en mémoire)
                 contenant.ajouterItem(newVin);
                 
+                // Sauvegarde dans le fichier JSON via le DAO
+                try {
+                    dao.ItemDAO jsonDao = new dao.ItemDAO();
+                    jsonDao.insertItem(newVin);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Erreur de format dans les champs numériques.", "Erreur", JOptionPane.ERROR_MESSAGE);
             }
@@ -296,7 +304,17 @@ public class MainFrame extends JFrame implements ContenantObserver {
                     vin.setPosition(txtPosition.getText());
                     vin.setPhaseVieillissement(txtPhase.getText());
                     vin.setNote(Double.parseDouble(txtNote.getText()));
+                    
+                    // Sauvegarder la modification dans le fichier JSON via le DAO
+                    try {
+                        dao.ItemDAO jsonDao = new dao.ItemDAO();
+                        jsonDao.updateItem(vin);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    
                     update();
+                    
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(this, "Erreur de format dans les champs numériques.", "Erreur", JOptionPane.ERROR_MESSAGE);
                 }
