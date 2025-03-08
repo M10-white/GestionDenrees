@@ -3,176 +3,222 @@ package dao;
 import model.Item;
 import model.Vin;
 
-import java.sql.*;
+import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
- * Classe DAO pour la persistance des items dans la base de données.
- * Utilise JDBC pour effectuer les opérations CRUD sur une base SQLite.
+ * Classe DAO pour la persistance des items via un fichier JSON.
  */
 public class ItemDAO {
-    private Connection connection;
+    private static final String FILE_PATH = "items.json";
 
     /**
-     * Constructeur qui établit la connexion à la base SQLite et crée la table si elle n'existe pas.
+     * Lit et retourne la liste des items depuis le fichier JSON.
+     * Si le fichier n'existe pas, retourne une liste vide.
      *
-     * @throws SQLException en cas d'erreur de connexion ou de création de table.
+     * @return la liste des items.
      */
-    public ItemDAO() throws SQLException {
-        connection = DriverManager.getConnection("jdbc:sqlite:denrees.db");
-        createTableIfNotExists();
-    }
-
-    /**
-     * Crée la table items si elle n'existe pas déjà, en incluant toutes les colonnes nécessaires.
-     *
-     * @throws SQLException en cas d'erreur lors de l'exécution de la requête.
-     */
-    private void createTableIfNotExists() throws SQLException {
-        String sql = "CREATE TABLE IF NOT EXISTS items ("
-                + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "denomination TEXT UNIQUE, "
-                + "description TEXT, "
-                + "quantite INTEGER, "
-                + "anneeProduction INTEGER, "
-                + "dateAjout TEXT, "
-                + "prix REAL, "
-                + "dlc TEXT, "
-                + "image TEXT, "
-                + "position TEXT, "
-                + "phaseVieillissement TEXT, "
-                + "note REAL, "
-                + "cepage TEXT, "
-                + "region TEXT"
-                + ")";
-        Statement stmt = connection.createStatement();
-        stmt.execute(sql);
-    }
-
-    /**
-     * Insère un nouvel item dans la base de données.
-     *
-     * @param item l'item à insérer.
-     * @throws SQLException en cas d'erreur d'exécution.
-     */
-    public void insertItem(Item item) throws SQLException {
-        String sql = "INSERT INTO items (denomination, description, quantite, anneeProduction, dateAjout, prix, dlc, image, position, phaseVieillissement, note, cepage, region) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
-        PreparedStatement pstmt = connection.prepareStatement(sql);
-        pstmt.setString(1, item.getDenomination());
-        pstmt.setString(2, item.getDescription());
-        pstmt.setInt(3, item.getQuantite());
-        pstmt.setInt(4, item.getAnneeProduction());
-        String dateStr = new SimpleDateFormat("yyyy-MM-dd").format(item.getDateAjout());
-        pstmt.setString(5, dateStr);
-        pstmt.setDouble(6, item.getPrix());
-        pstmt.setString(7, item.getDlc());
-        pstmt.setString(8, item.getImage());
-        pstmt.setString(9, item.getPosition());
-        pstmt.setString(10, item.getPhaseVieillissement());
-        pstmt.setDouble(11, item.getNote());
-        if (item instanceof Vin) {
-            Vin vin = (Vin) item;
-            pstmt.setString(12, vin.getCepage());
-            pstmt.setString(13, vin.getRegion());
-        } else {
-            pstmt.setString(12, null);
-            pstmt.setString(13, null);
-        }
-        pstmt.executeUpdate();
-    }
-
-    /**
-     * Lit et retourne la liste de tous les items stockés dans la base de données.
-     *
-     * @return une liste d'items.
-     * @throws SQLException en cas d'erreur d'exécution.
-     */
-    public List<Item> getAllItems() throws SQLException {
+    public List<Item> getAllItems() {
         List<Item> items = new ArrayList<>();
-        String sql = "SELECT * FROM items";
-        Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        while (rs.next()) {
-            String denomination = rs.getString("denomination");
-            String description = rs.getString("description");
-            int quantite = rs.getInt("quantite");
-            int anneeProduction = rs.getInt("anneeProduction");
-            String dateStr = rs.getString("dateAjout");
-            Date dateAjout;
-            try {
-                dateAjout = new SimpleDateFormat("yyyy-MM-dd").parse(dateStr);
-            } catch (Exception e) {
-                dateAjout = new Date();
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            return items;
+        }
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while((line = br.readLine()) != null) {
+                sb.append(line);
             }
-            double prix = rs.getDouble("prix");
-            String dlc = rs.getString("dlc");
-            String image = rs.getString("image");
-            String position = rs.getString("position");
-            String phaseVieillissement = rs.getString("phaseVieillissement");
-            double note = rs.getDouble("note");
-            String cepage = rs.getString("cepage");
-            String region = rs.getString("region");
-            // Pour cet exemple, nous considérons que si la colonne 'cepage' n'est pas vide, l'item est un Vin.
-            if (cepage != null && !cepage.isEmpty()) {
-                Vin vin = new Vin(denomination, description, quantite, anneeProduction, dateAjout, prix, cepage, region);
-                vin.setDlc(dlc);
-                vin.setImage(image);
-                vin.setPosition(position);
-                vin.setPhaseVieillissement(phaseVieillissement);
-                vin.setNote(note);
-                items.add(vin);
+            String json = sb.toString().trim();
+            // On s'attend à un tableau JSON : [ {...}, {...} ]
+            if (json.startsWith("[") && json.endsWith("]")) {
+                json = json.substring(1, json.length() - 1).trim();
+                if (json.isEmpty()) {
+                    return items;
+                }
+                // Séparation naïve des objets par "},{"
+                String[] objectStrings = json.split("\\},\\s*\\{");
+                for (int i = 0; i < objectStrings.length; i++) {
+                    String objStr = objectStrings[i];
+                    if (!objStr.startsWith("{")) {
+                        objStr = "{" + objStr;
+                    }
+                    if (!objStr.endsWith("}")) {
+                        objStr = objStr + "}";
+                    }
+                    Item item = parseItem(objStr);
+                    if (item != null) {
+                        items.add(item);
+                    }
+                }
             }
-            // Vous pouvez gérer d'autres types d'items ici.
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return items;
     }
 
     /**
-     * Met à jour les informations d'un item dans la base de données.
-     * Utilise la dénomination comme identifiant unique.
+     * Sérialise la liste des items en chaîne JSON.
      *
-     * @param item l'item à mettre à jour.
-     * @throws SQLException en cas d'erreur d'exécution.
+     * @param items liste des items.
+     * @return chaîne JSON.
      */
-    public void updateItem(Item item) throws SQLException {
-        String sql = "UPDATE items SET description=?, quantite=?, anneeProduction=?, dateAjout=?, prix=?, dlc=?, image=?, position=?, phaseVieillissement=?, note=?, cepage=?, region=? WHERE denomination=?";
-        PreparedStatement pstmt = connection.prepareStatement(sql);
-        pstmt.setString(1, item.getDescription());
-        pstmt.setInt(2, item.getQuantite());
-        pstmt.setInt(3, item.getAnneeProduction());
-        String dateStr = new SimpleDateFormat("yyyy-MM-dd").format(item.getDateAjout());
-        pstmt.setString(4, dateStr);
-        pstmt.setDouble(5, item.getPrix());
-        pstmt.setString(6, item.getDlc());
-        pstmt.setString(7, item.getImage());
-        pstmt.setString(8, item.getPosition());
-        pstmt.setString(9, item.getPhaseVieillissement());
-        pstmt.setDouble(10, item.getNote());
-        if (item instanceof Vin) {
-            Vin vin = (Vin) item;
-            pstmt.setString(11, vin.getCepage());
-            pstmt.setString(12, vin.getRegion());
-        } else {
-            pstmt.setString(11, null);
-            pstmt.setString(12, null);
+    private String serializeItems(List<Item> items) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[\n");
+        for (int i = 0; i < items.size(); i++) {
+            sb.append(serializeItem(items.get(i)));
+            if (i < items.size() - 1) {
+                sb.append(",\n");
+            }
         }
-        pstmt.setString(13, item.getDenomination());
-        pstmt.executeUpdate();
+        sb.append("\n]");
+        return sb.toString();
     }
 
     /**
-     * Supprime un item de la base de données en utilisant la dénomination comme identifiant.
+     * Sérialise un item (ici supposé être de type Vin) en JSON.
+     *
+     * @param item l'item à sérialiser.
+     * @return chaîne JSON représentant l'item.
+     */
+    private String serializeItem(Item item) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("  {");
+        sb.append("\"denomination\":\"").append(item.getDenomination()).append("\",");
+        sb.append("\"description\":\"").append(item.getDescription()).append("\",");
+        sb.append("\"quantite\":").append(item.getQuantite()).append(",");
+        sb.append("\"anneeProduction\":").append(item.getAnneeProduction()).append(",");
+        String dateStr = new SimpleDateFormat("yyyy-MM-dd").format(item.getDateAjout());
+        sb.append("\"dateAjout\":\"").append(dateStr).append("\",");
+        sb.append("\"prix\":").append(item.getPrix()).append(",");
+        sb.append("\"dlc\":\"").append(item.getDlc() != null ? item.getDlc() : "").append("\",");
+        sb.append("\"image\":\"").append(item.getImage() != null ? item.getImage() : "").append("\",");
+        sb.append("\"position\":\"").append(item.getPosition() != null ? item.getPosition() : "").append("\",");
+        sb.append("\"phaseVieillissement\":\"").append(item.getPhaseVieillissement() != null ? item.getPhaseVieillissement() : "").append("\",");
+        sb.append("\"note\":").append(item.getNote()).append(",");
+        // Pour Vin
+        if (item instanceof Vin) {
+            Vin vin = (Vin) item;
+            sb.append("\"cepage\":\"").append(vin.getCepage() != null ? vin.getCepage() : "").append("\",");
+            sb.append("\"region\":\"").append(vin.getRegion() != null ? vin.getRegion() : "").append("\"");
+        } else {
+            sb.append("\"cepage\":\"\",");
+            sb.append("\"region\":\"\"");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Sauvegarde la liste complète des items dans le fichier JSON.
+     *
+     * @param items liste des items.
+     */
+    private void saveAllItems(List<Item> items) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH))) {
+            bw.write(serializeItems(items));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Parse une chaîne JSON représentant un objet item.
+     *
+     * @param jsonObject chaîne JSON.
+     * @return l'item (Vin) ou null en cas d'erreur.
+     */
+    private Item parseItem(String jsonObject) {
+        jsonObject = jsonObject.trim();
+        if (jsonObject.startsWith("{") && jsonObject.endsWith("}")) {
+            jsonObject = jsonObject.substring(1, jsonObject.length()-1);
+        }
+        // Découpage naïf par virgule en tenant compte des guillemets
+        String[] fields = jsonObject.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+        Map<String, String> map = new HashMap<>();
+        for (String field : fields) {
+            String[] parts = field.split(":", 2);
+            if (parts.length == 2) {
+                String key = parts[0].trim();
+                String value = parts[1].trim();
+                if (key.startsWith("\"") && key.endsWith("\"")) {
+                    key = key.substring(1, key.length()-1);
+                }
+                if (value.startsWith("\"") && value.endsWith("\"")) {
+                    value = value.substring(1, value.length()-1);
+                }
+                map.put(key, value);
+            }
+        }
+        try {
+            String denomination = map.get("denomination");
+            String description = map.get("description");
+            int quantite = Integer.parseInt(map.get("quantite"));
+            int anneeProduction = Integer.parseInt(map.get("anneeProduction"));
+            String dateStr = map.get("dateAjout");
+            Date dateAjout = new SimpleDateFormat("yyyy-MM-dd").parse(dateStr);
+            double prix = Double.parseDouble(map.get("prix"));
+            String dlc = map.get("dlc");
+            String image = map.get("image");
+            String position = map.get("position");
+            String phaseVieillissement = map.get("phaseVieillissement");
+            double note = Double.parseDouble(map.get("note"));
+            String cepage = map.get("cepage");
+            String region = map.get("region");
+            Vin vin = new Vin(denomination, description, quantite, anneeProduction, dateAjout, prix, cepage, region);
+            vin.setDlc(dlc);
+            vin.setImage(image);
+            vin.setPosition(position);
+            vin.setPhaseVieillissement(phaseVieillissement);
+            vin.setNote(note);
+            return vin;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Insère un nouvel item dans le stockage JSON.
+     *
+     * @param item l'item à insérer.
+     */
+    public void insertItem(Item item) {
+        List<Item> items = getAllItems();
+        items.add(item);
+        saveAllItems(items);
+    }
+
+    /**
+     * Met à jour un item existant dans le stockage JSON.
+     * On utilise la dénomination comme identifiant unique.
+     *
+     * @param item l'item à mettre à jour.
+     */
+    public void updateItem(Item item) {
+        List<Item> items = getAllItems();
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).getDenomination().equals(item.getDenomination())) {
+                items.set(i, item);
+                break;
+            }
+        }
+        saveAllItems(items);
+    }
+
+    /**
+     * Supprime un item du stockage JSON.
+     * On identifie l'item par sa dénomination.
      *
      * @param item l'item à supprimer.
-     * @throws SQLException en cas d'erreur d'exécution.
      */
-    public void deleteItem(Item item) throws SQLException {
-        String sql = "DELETE FROM items WHERE denomination=?";
-        PreparedStatement pstmt = connection.prepareStatement(sql);
-        pstmt.setString(1, item.getDenomination());
-        pstmt.executeUpdate();
+    public void deleteItem(Item item) {
+        List<Item> items = getAllItems();
+        items.removeIf(i -> i.getDenomination().equals(item.getDenomination()));
+        saveAllItems(items);
     }
 }
