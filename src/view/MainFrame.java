@@ -211,7 +211,9 @@ public class MainFrame extends JFrame implements ContenantObserver {
                 newVin.setPhaseVieillissement(phase);
                 newVin.setNote(note);
                 
+                // Ajout dans le Contenant (gestion en mémoire)
                 contenant.ajouterItem(newVin);
+                
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Erreur de format dans les champs numériques.", "Erreur", JOptionPane.ERROR_MESSAGE);
             }
